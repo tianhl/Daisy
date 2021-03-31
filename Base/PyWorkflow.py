@@ -1,7 +1,6 @@
-import Daisy.Base.DaisyAlg as DaisyAlg 
+from Daisy.Base import DaisyAlg 
 import Daisy
 
-#class PyWorkflow(Daisy.Base.DaisyAlg):
 class PyWorkflow(DaisyAlg):
     def __init__(self, name):
         super().__init__(name)

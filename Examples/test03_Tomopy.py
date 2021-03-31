@@ -37,20 +37,6 @@ cfg_dict    = {
               'loadreco':{'inputfile_name':'/opt/CT/ZY-2/tomopy_reco.h5'},
               'savedata':{'outputfile_name':'tomopy_scan.h5'},
 }
-#cfg_dict   = {'azintalg':{'directDist':169,\
-#                          'centerX':1049.967,\
-#                          'centerY':1063.892,\
-#                          'pixelX':75,\
-#                          'pixelY':75,\
-#                          'PlanRotation':64.66877,\
-#                          'tilt':0.3753,\
-#                          'azimin':93,\
-#                          'azimax':115,\
-#                          'radmin':10.0,\
-#                          'radmax':20,\
-#                          'ntth':40}\
-#             }
-#
 
 
 @Daisy.Base.Singleton
