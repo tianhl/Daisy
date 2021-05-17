@@ -1,5 +1,5 @@
 print('==================================================')
-print('===   Daisy: Data Analysis Interated System    ===')
+print('===  Daisy: Data Analysis Integrated System    ===')
 print('==================================================')
 print('===     To see a world in a grain of sand      ===')
 print('===       And a heaven in a wild flower        ===')
@@ -12,6 +12,7 @@ print('==================================================')
 import Daisy.Base as Base
 import Daisy.DataHdlerAlg as DataHdlerAlg
 import Daisy.PyAlgorithms as PyAlgorithms
+import Daisy.PyServices   as PyServices
 def CreateWorkflowEngine(class_name='PyWorkflowEngine', name=None):
     if name is None:
         name = class_name

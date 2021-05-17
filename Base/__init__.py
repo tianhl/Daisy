@@ -1,6 +1,7 @@
 from .PyWorkflowEngine   import PyWorkflowEngine
 from .PyMQWorkflowEngine import PyMQWorkflowEngine
 from .DaisyAlg           import DaisyAlg
+from .DaisySvc           import DaisySvc
 from .PyWorkflow         import PyWorkflow
 #from Daisy.Base.PyWorkflowEngine   import PyWorkflowEngine
 #from Daisy.Base.PyMQWorkflowEngine import PyMQWorkflowEngine

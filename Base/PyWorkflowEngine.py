@@ -7,11 +7,13 @@ import Daisy
 class PyWorkflowEngine(Sniper.Workflow):
 
     def __init__(self, name):
-        Sniper.Workflow.__init__(self, name)
-        #Sniper.setColorful(2)
+        super().__init__(name)
+        Sniper.setColorful(2)
         Sniper.setLogLevel(6)
         self.__pyAlgHolder=[]
+        self.__pySvcHolder=[]
         self.__algList=[]
+        self.__svcList=[]
         self.operators = {}
         #self.LogWarn(" logging level: " + str(self.logLevel()))
 
@@ -90,7 +92,7 @@ class PyWorkflowEngine(Sniper.Workflow):
             
 
     def initialize(self, default_init=None):
-        self.createSvc("PyDataStoreSvc/DataStore")
+        super().createSvc("PyDataStoreSvc/DataStore")
         self.snoopy = self.Snoopy()
         self.snoopy.config()
         self.snoopy.initialize()
@@ -127,6 +129,40 @@ class PyWorkflowEngine(Sniper.Workflow):
         if isPyAlg is True:
             self.__pyAlgHolder.append(alg)
         
+    def addSvc(self, svc, isPySvc = True):
+        super().addSvc(svc)
+        if isPySvc is True:
+            self.__pySvcHolder.append(svc)
+        
+    def createSvc(self, name):
+        items   = name.split('/')
+        clsname = items[0]
+        svcname = items[0]
+        isPySvc = False
+        if len(items) == 2:
+            svcname = items[1]
+
+        self.LogInfo('create service ' + svcname + ' from class ' + clsname)
+        clsitems = clsname.split('.')
+        
+        try:
+            mod = getattr(Daisy, clsitems[0])
+            svc = getattr(mod, clsitems[1])(svcname)
+            print('===================')
+            isPySvc = True
+            self.addSvc(svc, isPySvc)
+            self.__svcList.append(svcname)
+            print(svc)
+            return svc
+        except AttributeError as error:
+            self.LogDebug(error)
+            #self.property("algs").append(name)
+            super().createSvc(name)
+            self.__svcList.append(svcname)
+            isPySvc = False
+            return self.find(svcname)
+        return False
+
     def createAlg(self, name):
         items   = name.split('/')
         clsname = items[0]
@@ -162,13 +198,6 @@ class PyWorkflowEngine(Sniper.Workflow):
 
     def _log(self, level, flag, msgs):
 
-    #def _log(self, msgs):
-               
-        #prefix = self.scope() + self.objName() + '.' + sys._getframe(2).f_code.co_name
-        #for msg in msgs:
-        #    prefix = prefix + " " + msg
-        ##prefix = prefix + " ".join(msgs)
-        #return prefix
         if ( self.logLevel() <= level):
             prefix = self.scope() + self.objName() + '.' + sys._getframe(2).f_code.co_name
             print("%-30s" % prefix, flag, end='')
@@ -180,23 +209,16 @@ class PyWorkflowEngine(Sniper.Workflow):
         self._log(0,  " TEST: ", msgs)
 
     def LogDebug(self, *msgs):
-        #prefix = self.scope() + self.objName() + '.' + sys._getframe(2).f_code.co_name
-        #logging.debug(self._log(msgs))
-        #print(msgs)
         self._log(2,  "DEBUG: ", msgs)
 
     def LogInfo(self, *msgs):
-        #logging.info(self._log(msgs))
         self._log(3,  " INFO: ", msgs)
 
     def LogWarn(self, *msgs):
-        #logging.warning(self._log(msgs))
         self._log(4,  " WARN: " , msgs)
 
     def LogError(self, *msgs):
-        #logging.error(self._log(msgs))
         self._log(5,  "ERROR: ", msgs)
 
     def LogFatal(self, *msgs):
-        #logging.critical(self._log(msgs))
         self._log(6,  "FATAL: ", msgs)

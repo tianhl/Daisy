@@ -57,7 +57,7 @@ class DaisyWorkflow_client:
         import os, json
         if class_name == None:
             raise Exception('Please Specific Workflow class name first')
-        cmd = "from Daisy import "+class_name
+        cmd = "from Daisy.Base import "+class_name
         self.kc.execute_interactive(cmd )
         if workflow_name == None:
             workflow_name = class_name

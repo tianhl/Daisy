@@ -24,7 +24,7 @@ class SaveHDF5(Daisy.Base.DaisyAlg):
     def execute(self, input_dataobj, output_path=''):
         idata  = self.data[input_dataobj]
         dtype  = type(idata)
-        print('type of ouput data: '+str(dtype))
+        #print('type of ouput data: '+str(dtype))
         with h5py.File(self.foname, 'w') as hfile:
             hfile.create_dataset(output_path, data=idata)
             self.LogInfo('Save data '+input_dataobj+' as '+output_path+' to '+self.foname)

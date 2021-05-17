@@ -3,7 +3,7 @@ import Sniper
 from Daisy.Base import PyMQDataStore
 
 
-class PyMQWorkflowEngine(Sniper.Workflow):
+class PyMQWorkflowEngine(Sniper.ExecUnit):
 
     def __init__(self, name):
         Workflow.__init__(self, name)

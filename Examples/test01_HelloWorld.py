@@ -18,24 +18,24 @@ if __name__ == "__main__":
     from Sniper import PyDataStore
     task.createSvc("PyDataStoreSvc/DataStore")
 
-    import HelloWorld
-    task.property("algs").append("HelloAlg/SetAlg")
+    #import HelloWorld
+    import SniperCoreUsages
+    task.createAlg("HelloWorld/SetAlg")
 
     x = task.find("SetAlg")
     print("Before setting properties")
     x.show()
 
 
-    x.property("VarString").set("GOD")
-    x.property("VectorInt").set([1,2,3])
-    x.property("MapStrInt").set( {"str%d"%v:v for v in range(6)} )
+    x.property("VarBool").set(True)
+    x.property("VecFloat").set([0.01])
+    x.property("PairDVD").set([0.09, [1.1, 2.2, 3.3]])
+    x.property("MapIntStr").set({1: 'str1'})
     print("After setting properties")
     x.show()
 
-    y = HelloWorld.HelloPy("PyAlg")
-    task.addAlg(y)
 
-    z = task.createAlg("HelloAlg/GetAlg")
+    z = task.createAlg("HelloWorld/GetAlg")
 
     task.show()
 
