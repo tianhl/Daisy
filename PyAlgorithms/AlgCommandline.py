@@ -8,10 +8,11 @@ class AlgCommandline(Daisy.Base.DaisyAlg):
         super().__init__(name)
         self.__shell = subprocess
         self.cfg     = {}
+        self.shell   = False
 
     def initialize(self):
         #self.data = self.get("DataStore").data()
-        self.LogInfo("initialized, Tomopy Reconstruction")
+        self.LogInfo("initialized, Shell Command Algorithm")
         return True
 
 
@@ -20,6 +21,14 @@ class AlgCommandline(Daisy.Base.DaisyAlg):
             self.LogError('Please provide configuration file!')
         Daisy.CfgParser(self, cfgdata, self.cfg)
         self.cmd = self.cfg['shell_command']
+
+        try:
+            if self.cfg['shell'].upper() == 'TRUE':
+                self.shell = True 
+        except:
+            pass
+        
+       
         ret = self.__shell.run(['which', self.cmd], stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         if ret.returncode == 0: 
             self.LogInfo("Find "+ self.cmd + ' at ' + ret.stdout.decode()[:-1])
@@ -35,7 +44,7 @@ class AlgCommandline(Daisy.Base.DaisyAlg):
                 if type(item) == str:
                     execute_cmd.append(item)
         
-        ret = self.__shell.run(execute_cmd, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+        ret = self.__shell.run(execute_cmd, shell = self.shell, stdout=subprocess.PIPE,stderr=subprocess.PIPE)
         if ret.returncode == 0: 
             self.LogInfo("Execute "+ self.cmd + ' with parameters: ' + str(parameters))
             self.LogInfo(ret.stdout.decode()[:-1])
