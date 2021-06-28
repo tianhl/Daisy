@@ -13,10 +13,10 @@ init_dict   = {
                           }\
               }
 
-cfg_dict   = {'loadtifs':{'input_path':'/opt/CT/ZY-2/',\
+cfg_dict   = {'loadtifs':{'input_path':'/hepsfs/huy/Data/ZY-1/tomo',\
                          },
-              'savedata':{'outputfile_name':'VDS.h5',\
-                          'hdf5dataset_path':'vds'
+              'savedata':{'outputfile_name':'andor_img_example.h5',\
+                          'hdf5dataset_path':'data',\
                          }\
              }
 
@@ -34,8 +34,10 @@ if __name__ == "__main__":
     print(data.shape)
     for i in range(data.shape[1]):
         odata = data[:,i,:]
+        #foname = 'andor_ima_shaped_image_vds_'+str(i)+'.h5'
         foname = 'vds_'+str(i)+'.h5'
-        wf['savedata'].execute(input_dataobj=odata, index=i, outputfile_name=foname, output_path='data')
+        #wf['savedata'].execute(input_dataobj=odata, index=i, outputfile_name=foname, output_path='/scan/data/andor_img_shaped_image')
+        wf['savedata'].execute(input_dataobj=odata, index=i, outputfile_name=foname, output_path='scan')
 
     wf['loadtifs'].finalize()
     wf['savedata'].finalize()

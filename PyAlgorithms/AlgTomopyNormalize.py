@@ -1,9 +1,17 @@
 from __future__ import print_function
 import Daisy
+
 class AlgTomopyNormalize(Daisy.Base.DaisyAlg):
 
     def __init__(self, name):
         super().__init__(name)
+        import multiprocessing as mp
+        import os
+        cc = mp.cpu_count()
+        if 'NUMEXPR_MAX_THREADS' in os.environ:
+            os.environ.pop('NUMEXPR_MAX_THREADS')
+        os.environ['NUMEXPR_MAX_THREADS'] = str(cc)
+        
 
     def initialize(self):
         self.data = self.get("DataStore").data()

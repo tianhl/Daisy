@@ -13,8 +13,8 @@ init_dict   = {
                           },\
                 'loadflat':{'class_name':'DataHdlerAlg.LoadTIFs',\
                           },\
-                'loadreco':{'class_name':'DataHdlerAlg.LoadHDF5',\
-                          },\
+                #'loadreco':{'class_name':'DataHdlerAlg.LoadHDF5',\
+                #          },\
              'filterdata':{'class_name':'PyAlgorithms.AlgSelectSinogram',\
                           },\
               'normalize':{'class_name':'PyAlgorithms.AlgTomopyNormalize',\
@@ -31,10 +31,10 @@ init_dict   = {
 
 
 cfg_dict    = {
-              'loadtomo':{'input_path':'/opt/CT/ZY-2/'},
-              'loaddark':{'input_path':'/opt/CT/ZY-2/'},
-              'loadflat':{'input_path':'/opt/CT/ZY-2/'},
-              'loadreco':{'inputfile_name':'/opt/CT/ZY-2/tomopy_reco.h5'},
+              'loadtomo':{'input_path':'/hepsfs/huy/Data/ZY-2/'},
+              'loaddark':{'input_path':'/hepsfs/huy/Data/ZY-2/'},
+              'loadflat':{'input_path':'/hepsfs/huy/Data/ZY-2/'},
+              #'loadreco':{'inputfile_name':'/opt/CT/ZY-2/tomopy_reco.h5'},
               'savedata':{'outputfile_name':'tomopy_scan.h5'},
 }
 
@@ -67,16 +67,16 @@ if __name__ == "__main__":
     wf = CTRecWorkflow('CTRecWorkflow')
     wf.setLogLevel(5)
     #wf.setLogFile('log.log')
-    #wf.initialize(workflow_engine='PyWorkflowEngine', workflow_environment = init_dict, algorithms_cfg = cfg_dict)
-    wf.initialize(workflow_engine='PyWorkflowEngine', workflow_environment = init_dict)
+    wf.initialize(workflow_engine='PyWorkflowEngine', workflow_environment = init_dict, algorithms_cfg = cfg_dict)
+    #wf.initialize(workflow_engine='PyWorkflowEngine', workflow_environment = init_dict)
     #wf2 = CTRecWorkflow('CTRecWorkflow')
     #wf2.initialize(workflow_engine='PyWorkflowEngine', workflow_environment = init_dict)
     #print('wf0:', str(wf))
     #print('wf1:', str(wf2))
-    wf.get_algorithm('loadtomo').config({'input_path':'/opt/CT/ZY-2/'})
-    wf.get_algorithm('loaddark').config({'input_path':'/opt/CT/ZY-2/'})
-    wf.get_algorithm('loadflat').config({'input_path':'/opt/CT/ZY-2/'})
-    wf.get_algorithm('savedata').config({'outputfile_name':'tomopy_scan.h5'})
+    #wf.get_algorithm('loadtomo').config({'input_path':'/opt/CT/ZY-2/'})
+    #wf.get_algorithm('loaddark').config({'input_path':'/opt/CT/ZY-2/'})
+    #wf.get_algorithm('loadflat').config({'input_path':'/opt/CT/ZY-2/'})
+    #wf.get_algorithm('savedata').config({'outputfile_name':'tomopy_scan.h5'})
     wf.execute()
     data =wf.data_keys()
     print(data)

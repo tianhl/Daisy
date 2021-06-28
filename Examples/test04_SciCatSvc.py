@@ -11,7 +11,7 @@ init_dict   = {
                           },\
               }
 
-cfg_dict   = {'loadtifs':{'input_path':'/opt/CT/ZY-2/',\
+cfg_dict   = {'loadtifs':{'input_path':'/hepsfs/huy/Data/ZY-2/',\
                          },
              }
 
@@ -23,8 +23,7 @@ if __name__ == "__main__":
     a=wf.createSvc('PyServices.SvcSciCat/SvcSciCat')
 
 
-    #wf['loadtifs'].execute(startswith='dark_',seperator='_', idx=1, output_dataobj='tomodat')
-    wf['loadtifs'].execute(startswith='tomo_',seperator='_', idx=1, output_dataobj='tomodat')
+    wf['loadtifs'].execute(startswith='tomo_',seperator='_', idx=2, output_dataobj='tomodat')
 
     data = wf.datastore['tomodat']
     wf['loadtifs'].finalize()
