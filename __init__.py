@@ -13,6 +13,7 @@ import Daisy.Base as Base
 import Daisy.DataHdlerAlg as DataHdlerAlg
 import Daisy.PyAlgorithms as PyAlgorithms
 import Daisy.PyServices   as PyServices
+import Daisy.Workflow     as Workflow
 
 def CreateWorkflowEngine(class_name='PyWorkflowEngine', name=None):
     if name is None:
