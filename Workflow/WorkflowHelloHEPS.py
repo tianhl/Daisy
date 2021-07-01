@@ -1,7 +1,7 @@
 from __future__ import print_function
-from HEPS import PyWorkflow
+import Daisy 
 
-class WorkflowHelloHEPS(PyWorkflow):
+class WorkflowHelloHEPS(Daisy.Base.PyWorkflow):
     def execute(self):
         self.engine['helloheps'].execute()
 

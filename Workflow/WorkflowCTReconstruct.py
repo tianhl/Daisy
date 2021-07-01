@@ -4,7 +4,7 @@
 
 # using the new Workflow Engine for data analysis.
      
-import HEPS 
+import Daisy 
 
 init_dict   = {
                 'loadtomo':{'class_name':'LoadTIFs',\
@@ -53,8 +53,8 @@ cfg_dict    = {
 #
 
 
-@HEPS.Singleton
-class WorkflowCTReconstruct(HEPS.PyWorkflow):
+@Daisy.Singleton
+class WorkflowCTReconstruct(Daisy.Base.PyWorkflow):
 
     def execute(self):
 
