@@ -53,7 +53,7 @@ cfg_dict    = {
 #
 
 
-@Daisy.Singleton
+@Daisy.Base.Singleton
 class WorkflowCTReconstruct(Daisy.Base.PyWorkflow):
 
     def execute(self):

@@ -22,14 +22,22 @@ if __name__ == "__main__":
     wf.setLogLevel(3)
     a=wf.createSvc('PyServices.SvcSciCat/SvcSciCat')
 
+    a.initialize(access_url='http://192.168.14.92:3000/api/v3/', username='analyzer', password='analyzer@2021')
+    pid=a.getPID(beamtimeId='GB14-20210621-19', scanId='scan02')
+    datasetinfo=a.getDatasetInfo(pid=pid)
+    filelist=a.getDataFileList(pid=pid)
+    print([f for f in filelist if f.find('tomo')>0])
+    print([f for f in filelist if f.find('flat')>0])
+    print([f for f in filelist if f.find('dark')>0])
 
-    wf['loadtifs'].execute(startswith='tomo_',seperator='_', idx=2, output_dataobj='tomodat')
 
-    data = wf.datastore['tomodat']
-    wf['loadtifs'].finalize()
+    #wf['loadtifs'].execute(startswith='tomo_',seperator='_', idx=2, output_dataobj='tomodat')
+
+    #data = wf.datastore['tomodat']
+    #wf['loadtifs'].finalize()
     
-    k = wf.datastore.keys()
-    print(data.dtype)
-    print(k)
-    print(a)
+    #k = wf.datastore.keys()
+    #print(data.dtype)
+    #print(k)
+    #print(a)
     wf.finalize()

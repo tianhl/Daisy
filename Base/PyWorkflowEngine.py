@@ -148,11 +148,9 @@ class PyWorkflowEngine(Sniper.Workflow):
         try:
             mod = getattr(Daisy, clsitems[0])
             svc = getattr(mod, clsitems[1])(svcname)
-            print('===================')
             isPySvc = True
             self.addSvc(svc, isPySvc)
             self.__svcList.append(svcname)
-            print(svc)
             return svc
         except AttributeError as error:
             self.LogDebug(error)
