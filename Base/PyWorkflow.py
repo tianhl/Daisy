@@ -24,6 +24,9 @@ class PyWorkflow(DaisyAlg):
         self.engine.config(default_cfg=algorithms_cfg)
         
     
+    def get_workflowEngine(self):
+        return self.engine
+
     def data_keys(self):
         return list(self.engine.datastore.keys())
 

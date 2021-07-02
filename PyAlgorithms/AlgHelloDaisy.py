@@ -6,6 +6,9 @@ class AlgHelloDaisy(Daisy.Base.DaisyAlg):
     def __init__(self, name):
         super().__init__(name)
 
+    def config(self):
+        pass
+
     def initialize(self):
         self.LogInfo("initialized, Hello Daisy ")
         return True
