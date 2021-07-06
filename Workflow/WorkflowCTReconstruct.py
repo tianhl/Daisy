@@ -32,7 +32,7 @@ init_dict   = {
 
 
 @Daisy.Base.Singleton
-class CTRecWorkflow(Daisy.Base.PyWorkflow):
+class WorkflowCTReconstruct(Daisy.Base.PyWorkflow):
     def execute(self, projs_file, darks_file, flats_file, idx, initual_center, num_sample, output_name):
 
         self.engine['loadprojs'].config(cfgdata=projs_file)
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     flats_file = {'inputfile_name':'/hepsfs/bl/3W1/202106/Data/GB14-20210621-19/raw/crystal01/scan02/andor_img_flat.h5'}
     scratchdata='/hepsfs/bl/3W1/202106/Data/GB14-20210621-19/scratch/crystal01/scan02/'
 
-    wf = CTRecWorkflow('CTRecWorkflow')
+    wf = WorkflowCTReconstruct('CTRWF'):
     wf.initialize(workflow_engine='PyWorkflowEngine', workflow_environment = init_dict)
     wf.execute(projs_file, darks_file, flats_file, idx=[1,500], initual_center = 1012, num_sample=5, output_name=scratchdata+'rec_test')
     wf.finalize()
