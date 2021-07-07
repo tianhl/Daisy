@@ -5,9 +5,62 @@ import requests
 import json
 class SvcSciCat(Daisy.Base.DaisySvc):
 
+    class GenerateDataset:
+        def __init__(self, pidprefix='CSTR:17081.11bsrf.3w1.'):
+            self.__datafile_list = []
+            self.__datafile_size = 0
+            self.__worker_name   = 'Daisy'
+            self.__pid = pidprefix
+
+        def __getCheckSum(self, filename):
+            from hashlib import md5
+            with open(filename, 'rb') as f:
+                s = md5(f.read()).hexdigest()
+                return s
+
+        def addFile(self, filename=''):
+            import os
+            if os.path.exists(filename) == False:
+                return False
+            filename = os.path.abspath(filename)
+            filesize = os.path.getsize(filename)
+            filetime = os.path.getmtime(filename)
+            fileuid  = os.stat(filename).st_uid
+            filegid  = os.stat(filename).st_gid
+            fileperm = oct(os.stat(filename).st_mode)[-3:]
+            filechk  = self.__getCheckSum(filename)
+            self.__datafile_list.append({
+                     'path':filename,
+                     'size':filesize,
+                     'time':filetime,
+                     'chk' :filechk,
+                     'uid' :fileuid,
+                     'gid' :filegid,
+                     'perm':fileperm})
+            if self.__datafile_size == 0:
+                import uuid
+                self.__pid = self.__pid + str(uuid.uuid4())   
+
+            if (self.__datafile_size + 1) == len(self.__datafile_list):
+                self.__datafile_size = self.__datafile_size + 1
+            else:
+                print('Warning: update file')
+                self.__datafile_size = len(self.__datafile_list)
+
+        def getPID(self):
+            return self.__pid
+
+        def getJSON(self):
+            ret_JSON = json.dumps({
+                     'size':self.__datafile_size,
+                     'dataFileList':self.__datafile_list,
+                     'updateBy':self.__worker_name})
+            return ret_JSON
+
     def __init__(self, name):
         super().__init__(name)
         self.headers      = {"Content-Type": "application/json;charset=UTF-8"}
+        self.__generateDataset = self.GenerateDataset()
         pass
 
     def initialize(self, access_url='', username='admin', password='ihep123'):
@@ -31,27 +84,16 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         else:
             return pid
 
-    class generateDataset:
-        import os
-        from hashlib import md5
-        def __init__(self):
-            self.__datafile_list = []
-            self.__datafile_size = NULL
-            self.__worker_name   = 'Daisy'
+    def setDataset(self):
+        data_json = self.__generateDataset.getJSON()
+        pid = self.__generateDataset.getPID()
+        url = self.access_point+'OrigDatablocks/upsertWithWhere?where={"datasetId":"'+pid+'"}&access_token='+self.__login()
+        print(url)
+        print(data_json)
+        r = requests.post(url=url,json=data_json,headers=self.headers)
 
-        def getCheckSum(filename):
-            with open(filename, 'rb') as f:
-                s = md5.new(f.read()).hexdigest()
-                return s
-
-        def addFile(self, filename=''):
-            if os.path.exists(filename) == False:
-                return False
-            filename = os.path.abspath(filename)
-            filesize = os.path.getsize(filename)
-            fileperm = oct(os.stat(filename).st_mode)[-3:]
-            filechk  = self.getCheckSum(filename)
-
+    def updateDataset(self, filename):
+        self.__generateDataset.addFile(filename) 
 
     def getDatasetInfo(self, pid = None):
         pid=self.__polishPID(pid)  

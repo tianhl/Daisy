@@ -26,9 +26,12 @@ if __name__ == "__main__":
     pid=a.getPID(beamtimeId='GB14-20210621-19', scanId='scan02')
     datasetinfo=a.getDatasetInfo(pid=pid)
     filelist=a.getDataFileList(pid=pid)
-    print([f for f in filelist if f.find('tomo')>0])
+    tomofiles = [f for f in filelist if f.find('tomo')>0]
     print([f for f in filelist if f.find('flat')>0])
     print([f for f in filelist if f.find('dark')>0])
+    print(tomofiles)
+    a.updateDataset('/hepsfs/bl/3W1/202106/Data/GB14-20210621-19/scratch/crystal01/scan02/rec_test1027.25_0.tif')
+    a.setDataset()
 
 
     #wf['loadtifs'].execute(startswith='tomo_',seperator='_', idx=2, output_dataobj='tomodat')
