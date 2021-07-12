@@ -39,7 +39,7 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                      'perm':fileperm})
             if self.__datafile_size == 0:
                 import uuid
-                self.__pid = self.__pid + str(uuid.uuid4())   
+                self.__pid = self.__pid + str(uuid.uuid4()).replace('-','')
                 print(self.__pid)
 
             if (self.__datafile_size + 1) == len(self.__datafile_list):
@@ -51,34 +51,50 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         def getPID(self):
             return self.__pid
 
-        def getDatasetJSON(self, beamtimeId, scanId):
+        def getDerivedDatasetJSON(self, beamtimeId, scanId, rawPID):
             ret_JSON = json.dumps({
-                          "pid": self.__pid,
-                          "beamtimeId": beamtimeId,
-                          "scanId": scanId,
-                          "owner": "string",
-                          "ownerEmail": "string",
-                          "orcidOfOwner": "string",
-                          "contactEmail": "string",
-                          "sourceFolder": "string",
-                          "size":self.__datafile_size,
-                          "packedSize": 0,
-                          "creationTime": "2021-07-09T08:05:04.286Z",
-                          "type": "derived",
-                          "validationStatus": "unvalidated",
-                          "description": "string",
-                          "datasetName": "string",
-                          "classification": "string",
-                          "license": "string",
-                          "version": "string",
-                          "ownerGroup": "string",
-                          "accessGroups": [
-                            "string"
-                          ],
-                          "createdBy": "analyzer",
-                          "updatedBy": "analyzer",
+                           "investigator": "string",
+                           "inputDatasets": [
+                             rawPID
+                           ],
+                           "usedSoftware": [
+                             "string"
+                           ],
+                           "jobParameters": {},
+                           "jobLogData": "string",
+                           "scientificMetadata": {},
+                           "pid": self.__pid,
+                           "beamtimeId": beamtimeId,
+                           "scanId": scanId,
+                           "owner": "string",
+                           "ownerEmail": "string",
+                           "orcidOfOwner": "string",
+                           "contactEmail": "string",
+                           "sourceFolder": "string",
+                           "size":self.__datafile_size,
+                           "packedSize": 0,
+                           "creationTime": "2021-07-12T02:22:45.813Z",
+                           "type": "string",
+                           "validationStatus": "unvalidated",
+                           "keywords": [
+                             "string"
+                           ],
+                           "description": "string",
+                           "datasetName": "string",
+                           "classification": "string",
+                           "license": "string",
+                           "version": "string",
+                           "ownerGroup": "string",
+                           "accessGroups": [
+                             "string"
+                           ],
+                           "createdBy": "string",
+                           "updatedBy": "string",
+                           "createdAt": "2021-07-12T02:22:45.813Z",
+                           "updatedAt": "2021-07-12T02:22:45.813Z",
                           })
             return ret_JSON
+
 
         def getOrigDatablocksJSON(self):
 
@@ -131,18 +147,14 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         else:
             return pid
 
-    def setDataset(self, beamtimeId, scanId):
+    def setDataset(self, beamtimeId, scanId, rawPID):
         #pid = self.__generateDataset.getPID()
-        dataset_json = self.__generateDataset.getDatasetJSON(beamtimeId = beamtimeId, scanId = scanId)
-        url = self.access_point+'Datasets?access_token='+self.__login()
-        #r = requests.post(url=url,json=data_json,headers=self.headers)
-        print(url)
-        print(dataset_json)
+        dataset_json = self.__generateDataset.getDerivedDatasetJSON(beamtimeId = beamtimeId, scanId = scanId, rawPID = rawPID)
+        url = self.access_point+'DerivedDatasets?access_token='+self.__login()
+        r = requests.post(url=url,json=data_json,headers=self.headers)
         datablock_json = self.__generateDataset.getOrigDatablocksJSON()
         url = self.access_point+'OrigDatablocks?access_token='+self.__login()
-        #r = requests.post(url=url,json=datablock_json,headers=self.headers)
-        print(url)
-        print(datablock_json)
+        r = requests.post(url=url,json=datablock_json,headers=self.headers)
 
     def updateDataset(self, filename):
         self.__generateDataset.addFile(filename) 
