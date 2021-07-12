@@ -40,6 +40,7 @@ class SvcSciCat(Daisy.Base.DaisySvc):
             if self.__datafile_size == 0:
                 import uuid
                 self.__pid = self.__pid + str(uuid.uuid4())   
+                print(self.__pid)
 
             if (self.__datafile_size + 1) == len(self.__datafile_list):
                 self.__datafile_size = self.__datafile_size + 1
@@ -50,8 +51,39 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         def getPID(self):
             return self.__pid
 
-        def getJSON(self):
+        def getDatasetJSON(self, beamtimeId, scanId):
             ret_JSON = json.dumps({
+                          "pid": self.__pid,
+                          "beamtimeId": beamtimeId,
+                          "scanId": scanId,
+                          "owner": "string",
+                          "ownerEmail": "string",
+                          "orcidOfOwner": "string",
+                          "contactEmail": "string",
+                          "sourceFolder": "string",
+                          "size":self.__datafile_size,
+                          "packedSize": 0,
+                          "creationTime": "2021-07-09T08:05:04.286Z",
+                          "type": "derived",
+                          "validationStatus": "unvalidated",
+                          "description": "string",
+                          "datasetName": "string",
+                          "classification": "string",
+                          "license": "string",
+                          "version": "string",
+                          "ownerGroup": "string",
+                          "accessGroups": [
+                            "string"
+                          ],
+                          "createdBy": "analyzer",
+                          "updatedBy": "analyzer",
+                          })
+            return ret_JSON
+
+        def getOrigDatablocksJSON(self):
+
+            ret_JSON = json.dumps({
+                     'datasetId':self.__pid,
                      'size':self.__datafile_size,
                      'dataFileList':self.__datafile_list,
                      'updateBy':self.__worker_name})
@@ -65,15 +97,30 @@ class SvcSciCat(Daisy.Base.DaisySvc):
 
     def initialize(self, access_url='', username='admin', password='ihep123'):
         self.access_point = 'http://192.168.14.92:3000/api/v3/'
-        self.user_info    = {"username":username, "password":password}
+        self.user_info    = {"username":username,"password":password}
         self.LogInfo("initialized SvcSciCat")
         return True
 
     def __login(self):
         url = self.access_point+"Users/login"
-        r = requests.post(url=url, json=self.user_info, headers=self.headers)
-        token = (r.json()["id"])
-        return (token)
+        try:
+            r = requests.post(url=url, json=self.user_info, headers=self.headers)
+            if r.ok:
+                try:
+                    token = (r.json()["id"])
+                    return (token)
+                except Exception:
+                    self.LogError('Cannot get user ID from SciCat!')
+            else:
+                self.LogError('Cannot get Response from SciCat Service')
+                self.LogError(r)
+                self.LogError(url)
+                self.LogError(self.user_info)
+        except Exception:
+            self.LogError('SciCat Service is not available!')
+            self.LogError(url)
+            self.LogError(self.user_info)
+              
 
     def login(self):
         return self.__login()
@@ -84,13 +131,18 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         else:
             return pid
 
-    def setDataset(self):
-        data_json = self.__generateDataset.getJSON()
-        pid = self.__generateDataset.getPID()
-        url = self.access_point+'OrigDatablocks/upsertWithWhere?where={"datasetId":"'+pid+'"}&access_token='+self.__login()
+    def setDataset(self, beamtimeId, scanId):
+        #pid = self.__generateDataset.getPID()
+        dataset_json = self.__generateDataset.getDatasetJSON(beamtimeId = beamtimeId, scanId = scanId)
+        url = self.access_point+'Datasets?access_token='+self.__login()
+        #r = requests.post(url=url,json=data_json,headers=self.headers)
         print(url)
-        print(data_json)
-        r = requests.post(url=url,json=data_json,headers=self.headers)
+        print(dataset_json)
+        datablock_json = self.__generateDataset.getOrigDatablocksJSON()
+        url = self.access_point+'OrigDatablocks?access_token='+self.__login()
+        #r = requests.post(url=url,json=datablock_json,headers=self.headers)
+        print(url)
+        print(datablock_json)
 
     def updateDataset(self, filename):
         self.__generateDataset.addFile(filename) 
