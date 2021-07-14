@@ -33,7 +33,7 @@ if __name__ == "__main__":
     #filelist=a.getDataFileList(pid=pid)
     #print(filelist)
     a.updateDataset('/home/tianhl/workarea/Codes/git-sniper/Daisy/Examples/hello.json')
-    a.setDataset(rawPID = aPID, doCommit = True)
+    a.setDataset(rawPID = aPID, doCommit = False)
 
 
     #wf['loadtifs'].execute(startswith='tomo_',seperator='_', idx=2, output_dataobj='tomodat')

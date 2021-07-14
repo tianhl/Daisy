@@ -64,17 +64,17 @@ class SvcSciCat(Daisy.Base.DaisySvc):
             return self.__pid
 
         def getDerivedDatasetJSON(self, raw_info):
+            import datetime
             ret_JSON = {
                            "investigator": raw_info["principalInvestigator"],
                            "inputDatasets": [
                              raw_info['pid']
                            ],
                            "usedSoftware": [
-                             "string"
+                             "Daisy"
                            ],
                            "jobParameters": {},
                            "jobLogData": "string",
-                           "scientificMetadata": {},
                            "pid": self.__pid,
                            "beamtimeId": raw_info['beamtimeId'],
                            "scanId": raw_info['scanId'],
@@ -85,8 +85,8 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                            "sourceFolder": self.__folder,
                            "size":self.__datafile_size,
                            "packedSize": 0,
-                           "creationTime": "2021-07-12T02:22:45.813Z",
-                           "type": "string",
+                           "creationTime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                           "type": "derived",
                            "validationStatus": "unvalidated",
                            "keywords": [
                              "string"
@@ -102,9 +102,11 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                            ],
                            "createdBy": "string",
                            "updatedBy": "string",
-                           "createdAt": "2021-07-12T02:22:45.813Z",
-                           "updatedAt": "2021-07-12T02:22:45.813Z",
+                           "createdAt": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                           "updatedAt": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+
                           }
+
             return ret_JSON
 
 
@@ -124,8 +126,8 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         self.__filesnum        = 0
         pass
 
-    def initialize(self, access_url='', username='admin', password='ihep123'):
-        self.access_point = 'http://192.168.14.92:3000/api/v3/'
+    def initialize(self, access_url='http://192.168.14.92:3000/api/v3/' , username='admin', password='ihep123'):
+        self.access_point = access_url 
         self.user_info    = {"username":username,"password":password}
         self.__token      = self.__login()
         self.LogInfo("initialized SvcSciCat")
