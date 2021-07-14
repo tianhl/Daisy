@@ -23,11 +23,13 @@ class SvcSciCat(Daisy.Base.DaisySvc):
             with open(filename, 'rb') as f:
                 s = md5(f.read()).hexdigest()
                 return s
+            return None
 
         def addFile(self, filename=''):
             import os 
             from datetime import datetime
             if os.path.exists(filename) == False:
+                print(filename + " does not exist!")
                 return False
             filename = os.path.abspath(filename)
             filesize = os.path.getsize(filename)
@@ -52,8 +54,10 @@ class SvcSciCat(Daisy.Base.DaisySvc):
             if self.__folder == None:
                 self.__folder = os.path.split(filename)[0]
             elif self.__folder is not os.path.split(filename)[0]:
-                self.LogError('Cannot change folder')
-               
+                print('Cannot change folder')
+                return False
+
+            return True 
             #if (self.__datafile_size + 1) == len(self.__datafile_list):
             #    self.__datafile_size = self.__datafile_size + 1
             #else:
@@ -65,53 +69,56 @@ class SvcSciCat(Daisy.Base.DaisySvc):
 
         def getDerivedDatasetJSON(self, raw_info):
             import datetime
-            ret_JSON = {
-                           "investigator": raw_info["principalInvestigator"],
-                           "inputDatasets": [
-                             raw_info['pid']
-                           ],
-                           "usedSoftware": [
-                             "Daisy"
-                           ],
-                           "jobParameters": {},
-                           "jobLogData": "string",
-                           "pid": self.__pid,
-                           "beamtimeId": raw_info['beamtimeId'],
-                           "scanId": raw_info['scanId'],
-                           "owner": raw_info['owner'],
-                           "ownerEmail": raw_info["ownerEmail"],
-                           "orcidOfOwner": "string",
-                           "contactEmail": raw_info["contactEmail"],
-                           "sourceFolder": self.__folder,
-                           "size":self.__datafile_size,
-                           "packedSize": 0,
-                           "creationTime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                           "type": "derived",
-                           "validationStatus": "unvalidated",
-                           "keywords": [
-                             "string"
-                           ],
-                           "description": raw_info["description"],
-                           "datasetName": raw_info["datasetName"]+'-Daisy',
-                           "classification": raw_info["classification"],
-                           "license": "string",
-                           "version": "string",
-                           "ownerGroup": "string",
-                           "accessGroups": [
-                             "string"
-                           ],
-                           "createdBy": "string",
-                           "updatedBy": "string",
-                           "createdAt": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
-                           "updatedAt": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+            try:
+                ret_JSON = {
+                               "investigator": raw_info["principalInvestigator"],
+                               "inputDatasets": [
+                                 raw_info['pid']
+                               ],
+                               "usedSoftware": [
+                                 "Daisy"
+                               ],
+                               "jobParameters": {},
+                               "jobLogData": "string",
+                               "pid": self.__pid,
+                               "beamtimeId": raw_info['beamtimeId'],
+                               "scanId": raw_info['scanId'],
+                               "owner": raw_info['owner'],
+                               "ownerEmail": raw_info["ownerEmail"],
+                               "orcidOfOwner": "string",
+                               "contactEmail": raw_info["contactEmail"],
+                               "sourceFolder": self.__folder,
+                               "size":self.__datafile_size,
+                               "packedSize": 0,
+                               "creationTime": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                               "type": "derived",
+                               "validationStatus": "unvalidated",
+                               "keywords": [
+                                 "string"
+                               ],
+                               "description": raw_info["description"],
+                               "datasetName": raw_info["datasetName"]+'-Daisy',
+                               "classification": raw_info["classification"],
+                               "license": "string",
+                               "version": "string",
+                               "ownerGroup": "string",
+                               "accessGroups": [
+                                 "string"
+                               ],
+                               "createdBy": "string",
+                               "updatedBy": "string",
+                               "createdAt": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
+                               "updatedAt": datetime.datetime.now().strftime("%Y-%m-%dT%H:%M:%S.%f"),
 
-                          }
+                              }
+            except Exception:
+                print('Can not generate dataset json')
+                return None
 
             return ret_JSON
 
 
         def getOrigDatablocksJSON(self):
-
             ret_JSON = {
                      'datasetId':self.__pid,
                      'size':self.__datafile_size,
@@ -164,15 +171,29 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         else:
             return pid
 
-    def setDataset(self, rawPID, doCommit = False):
+    def setDataset(self, rawPID = None, doCommit = False):
+
+        if rawPID == None:
+            self.LogError('Please specify input pid')
+            return None
 
         rawDatasetinfo=self.getDatasetInfo(pid=rawPID)
+        if rawDatasetinfo == None:
+            self.LogError('Can not get Raw Dataset Information with pid '+ rawPID)
+            return False
 
         dataset_json = self.__generateDataset.getDerivedDatasetJSON(raw_info=rawDatasetinfo)
+        if dataset_json == None:
+            self.LogError('Can not generate Dataset JSON')
+            return None
         dataset_url = self.access_point+'DerivedDatasets?access_token='+self.__token
 
         datablock_json = self.__generateDataset.getOrigDatablocksJSON()
         datablock_url = self.access_point+'OrigDatablocks?access_token='+self.__token
+        if datablock_json['size'] == 0 or len(datablock_json['dataFileList']) == 0: 
+            self.LogError('No new file added to the dataset')
+            self.LogError(str(datablock_json))
+            return False
 
         pid = self.__generateDataset.getPID()
         ret = {
@@ -183,8 +204,37 @@ class SvcSciCat(Daisy.Base.DaisySvc):
               'filenumber1' : self.__filesnum,
         }
         if(doCommit):
-            r = requests.post(url=dataset_url,json=dataset_json,headers=self.headers)
-            r = requests.post(url=datablock_url,json=datablock_json,headers=self.headers)
+
+            try:
+                r = requests.post(url=dataset_url,json=dataset_json,headers=self.headers)
+                if r.ok:
+                    return True
+                else:
+                    self.LogError('Cannot post Dataset to SciCat')
+                    self.LogError(r.text)
+                    self.LogError(dataset_url)
+                    self.LogError(dataset_json)
+                    return False
+            except Exception:
+                self.LogError('SciCat Service is not available!')
+                self.LogError(dataset_url)
+                return False
+  
+            try:
+                r = requests.post(url=datablock_url,json=datablock_json,headers=self.headers)
+                if r.ok:
+                    return True
+                else:
+                    self.LogError('Cannot post Datablock to SciCat')
+                    self.LogError(r.text)
+                    self.LogError(datablock_url)
+                    self.LogError(datablock_json)
+                    return False
+            except Exception:
+                self.LogError('SciCat Service is not available!')
+                self.LogError(datablock_url)
+                return False
+  
             self.LogInfo('Commit Derived Dataset ' + pid + ' to SciCat')
             self.__generateDataset.reset()
             self.__filesnum = 0
@@ -202,26 +252,96 @@ class SvcSciCat(Daisy.Base.DaisySvc):
         self.__filesnum = self.__filesnum + 1
 
     def getDatasetInfo(self, pid = None):
+
+        if pid == None:
+            self.LogError('Please specify pid')
+            return None
+
         pid=self.__polishPID(pid)  
         url = self.access_point+'Datasets/'+pid+'?access_token='+self.__token
         self.LogInfo(url)
-        r=requests.get(url=url,json=self.user_info,headers=self.headers)
-        return (r.json())
+
+        try:
+            r = requests.get(url=url,json=self.user_info,headers=self.headers)
+            if r.ok:
+                try:
+                    return (r.json())
+                except Exception:
+                    self.LogError('Cannot get Dataset from SciCat with PID '+ PId)
+                    self.LogError(r.text)
+                    return None
+            else:
+                self.LogError('Cannot get Response from SciCat Service')
+                self.LogError(r)
+                self.LogError(url)
+                self.LogError(self.user_info)
+                return None
+        except Exception:
+            self.LogError('SciCat Service is not available!')
+            self.LogError(url)
+            self.LogError(self.user_info)
+            return None
   
-    def getPID(self, beamtimeId, scanId):
+    def getPID(self, beamtimeId = None, scanId = None):
+
+        if beamtimeId == None or scanId == None:
+            self.LogError('Please specify beamtimeId and scanId')
+            return None
+
         url = self.access_point+'Datasets/findOne?filter={"where":{"scanId":"'+scanId+'","beamtimeId":"'+beamtimeId+'"}}&access_token='+self.__token
         self.LogInfo(url)
-        r=requests.get(url=url,json=self.user_info,headers=self.headers)
-        pid = r.json()['pid']
-        return pid
+        try:
+            r = requests.get(url=url,json=self.user_info,headers=self.headers)
+            if r.ok:
+                try:
+                    pid = (r.json()["pid"])
+                    return pid
+                except Exception:
+                    self.LogError('Cannot get PID from SciCat with BeamtimeID '+ beamtimeId + ' ScanID ' + scanId)
+                    self.LogError(r.text)
+                    return None
+            else:
+                self.LogError('Cannot get Response from SciCat Service')
+                self.LogError(r)
+                self.LogError(url)
+                self.LogError(self.user_info)
+                return None
+        except Exception:
+            self.LogError('SciCat Service is not available!')
+            self.LogError(url)
+            self.LogError(self.user_info)
+            return None
 
     def getDataFileList(self, pid = None):
+        if pid == None:
+            self.LogError('Please specify pid')
+            return None
         pid=self.__polishPID(pid)  
         url = self.access_point+'OrigDatablocks/findOne?filter={"where":{"datasetId":"'+pid+'"}}&access_token='+self.__token
         self.LogInfo(url)
-        r=requests.get(url=url,json=self.user_info,headers=self.headers)
-        
-        return  tuple(eachfile['path'] for eachfile in r.json()['dataFileList'])
+
+        try:
+            r = requests.get(url=url,json=self.user_info,headers=self.headers)
+            if r.ok:
+                try:
+                    datafile_list = (r.json()["dataFileList"])
+                    files = tuple(eachfile['path'] for eachfile in datafile_list)
+                    return files
+                except Exception:
+                    self.LogError('Cannot get filelist from SciCat with PID '+ pid)
+                    self.LogError(r.text)
+                    return None
+            else:
+                self.LogError('Cannot get Response from SciCat Service')
+                self.LogError(r)
+                self.LogError(url)
+                self.LogError(self.user_info)
+                return None
+        except Exception:
+            self.LogError('SciCat Service is not available!')
+            self.LogError(url)
+            self.LogError(self.user_info)
+            return None
 
     def execute(self):
         self.LogInfo("execute SvcSciCat, Hello Daisy ")
