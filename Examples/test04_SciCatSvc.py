@@ -22,15 +22,18 @@ if __name__ == "__main__":
     wf.setLogLevel(3)
     a=wf.createSvc('PyServices.SvcSciCat/SvcSciCat')
 
-    aPID='CSTR:17081.11bsrf.3w1.8d8023f166a94b05ba678710d14aff25'
+    #aPID='CSTR:17081.11bsrf.3w1.8d8023f166a94b05ba678710d14aff25'
     a.initialize(access_url='http://192.168.14.92:3000/api/v3/', username='analyzer', password='analyzer@2021')
-    #pid=a.getPID(beamtimeId='GB14-20210621-19', scanId='scan00000')
+    aPID=a.getPID(beamtimeId='GB14-20210621-19', scanId='scan00003')
     datasetinfo=a.getDatasetInfo(pid=aPID)
-    print(datasetinfo)
+    #print(datasetinfo)
+    #print(datasetinfo['sourceFolder'])
+    #print(datasetinfo['beamtimeId'])
+    #print(datasetinfo['scanId'])
     #filelist=a.getDataFileList(pid=pid)
     #print(filelist)
     a.updateDataset('/home/tianhl/workarea/Codes/git-sniper/Daisy/Examples/hello.json')
-    a.setDataset(beamtimeId='GB14-20210621-19', scanId='scan00000', rawPID = aPID)
+    a.setDataset(rawPID = aPID, doCommit = True)
 
 
     #wf['loadtifs'].execute(startswith='tomo_',seperator='_', idx=2, output_dataobj='tomodat')
