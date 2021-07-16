@@ -202,14 +202,13 @@ class SvcSciCat(Daisy.Base.DaisySvc):
               'path'        : dataset_json['sourceFolder'],
               'status'      : 1,
               'filenumber1' : self.__filesnum,
+              'type'        : 'derived',
         }
         if(doCommit):
 
             try:
                 r = requests.post(url=dataset_url,json=dataset_json,headers=self.headers)
-                if r.ok:
-                    return True
-                else:
+                if not r.ok:
                     self.LogError('Cannot post Dataset to SciCat')
                     self.LogError(r.text)
                     self.LogError(dataset_url)
@@ -222,9 +221,7 @@ class SvcSciCat(Daisy.Base.DaisySvc):
   
             try:
                 r = requests.post(url=datablock_url,json=datablock_json,headers=self.headers)
-                if r.ok:
-                    return True
-                else:
+                if not r.ok:
                     self.LogError('Cannot post Datablock to SciCat')
                     self.LogError(r.text)
                     self.LogError(datablock_url)

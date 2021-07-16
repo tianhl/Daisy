@@ -7,6 +7,8 @@
 
 import Daisy
 
+import json
+
 init_dict   = {
                'loadprojs':{'class_name':'DataHdlerAlg.LoadHDF5',\
                           },\
@@ -33,18 +35,32 @@ init_dict   = {
 
 @Daisy.Base.Singleton
 class WorkflowCTReconstruct(Daisy.Base.PyWorkflow):
-    def execute(self, projs_file, darks_file, flats_file, idx, initual_center, num_sample, output_name):
-
+    def execute(self, projs_file = None, darks_file =None, flats_file = None, idx =None, initual_center= None, num_sample = None, output_name= None):
+        flag_normalization = True
+        if projs_file == None:
+            self.LogError('Must specify the Projection Files for reconstruction')
+            return False
         self.engine['loadprojs'].config(cfgdata=projs_file)
-        self.engine['loaddarks'].config(cfgdata=darks_file)
-        self.engine['loadflats'].config(cfgdata=flats_file)
         self.engine['loadprojs'].execute(input_path='/scan/data/andor_img_shaped_image', output_dataobj='tomodata')
-        self.engine['loaddarks'].execute(input_path='/scan/data/andor_img_shaped_image', output_dataobj='darkdata')
-        self.engine['loadflats'].execute(input_path='/scan/data/andor_img_shaped_image', output_dataobj='flatdata')
-        self.engine['filterdata'].execute(input_dataobj='tomodata', output_dataobj='tomodata_proc', idxs=idx)
-        self.engine['filterdata'].execute(input_dataobj='darkdata', output_dataobj='darkdata_proc', idxs=idx)
-        self.engine['filterdata'].execute(input_dataobj='flatdata', output_dataobj='flatdata_proc', idxs=idx)
-        self.engine['normalize'].execute(projs_dataobj='tomodata_proc', darks_dataobj='darkdata_proc', flats_dataobj='flatdata_proc', output_dataobj='normdata')
+        if darks_file == None or flats_file == None:
+            flag_normalization = False
+        else: 
+            self.engine['loaddarks'].config(cfgdata=darks_file)
+            self.engine['loadflats'].config(cfgdata=flats_file)
+            self.engine['loaddarks'].execute(input_path='/scan/data/andor_img_shaped_image', output_dataobj='darkdata')
+            self.engine['loadflats'].execute(input_path='/scan/data/andor_img_shaped_image', output_dataobj='flatdata')
+
+        
+        if idxs != None:
+            self.engine['filterdata'].execute(input_dataobj='tomodata', output_dataobj='tomodata', idxs=idx)
+            if flag_normalization == True:
+                self.engine['filterdata'].execute(input_dataobj='darkdata', output_dataobj='darkdata', idxs=idx)
+                self.engine['filterdata'].execute(input_dataobj='flatdata', output_dataobj='flatdata', idxs=idx)
+
+
+        if flag_normalization == True:
+            self.engine['normalize'].execute(projs_dataobj='tomodata', darks_dataobj='darkdata', flats_dataobj='flatdata', output_dataobj='normdata')
+
         self.engine['angles'].execute(input_dataobj='normdata', output_dataobj='thetas')
         self.engine['minuslog'].execute(input_dataobj='normdata', output_dataobj='mlogdata')
         self.engine['findcenter'].execute(input_dataobj='mlogdata', subpixel_accuracy = 0.5, initual_value= initual_center, output_dataobj='center')
