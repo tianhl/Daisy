@@ -11,12 +11,14 @@ class SvcSciCat(Daisy.Base.DaisySvc):
             self.__datafile_size = 0
             self.__folder        = None
             self.__worker_name   = 'Daisy'
-            self.__pid           = pidprefix
+            self.__prefix        = pidprefix
+            self.__pid           = self.__prefix
 
         def reset(self):
             self.__datafile_list = []
             self.__datafile_size = 0
             self.__folder        = None
+            self.__pid           = self.__prefix
 
         def __getCheckSum(self, filename):
             from hashlib import md5
@@ -27,13 +29,14 @@ class SvcSciCat(Daisy.Base.DaisySvc):
 
         def addFile(self, filename=''):
             import os 
-            from datetime import datetime
+            from datetime import datetime, timedelta
             if os.path.exists(filename) == False:
                 print(filename + " does not exist!")
                 return False
             filename = os.path.abspath(filename)
             filesize = os.path.getsize(filename)
-            filetime = datetime.fromtimestamp(os.path.getmtime(filename)).strftime("%Y-%m-%dT%H:%M:%S.%f")
+            #filetime = datetime.fromtimestamp(os.path.getmtime(filename)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+            filetime = (datetime.fromtimestamp(os.path.getmtime(filename))+timedelta(hours=-8)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             fileuid  = os.stat(filename).st_uid
             filegid  = os.stat(filename).st_gid
             fileperm = oct(os.stat(filename).st_mode)[-3:]
@@ -238,6 +241,8 @@ class SvcSciCat(Daisy.Base.DaisySvc):
             return ret
         else:
             self.LogInfo('Ready to Commit Derived Dataset ' + pid + ' to SciCat')
+            #self.__generateDataset.reset()
+            #self.__filesnum = 0
             print(dataset_url)
             print(dataset_json)
             print(datablock_url)
