@@ -20,13 +20,13 @@ class SvcTransSys(Daisy.Base.DaisySvc):
         val_cols = ', '.join('%({})s'.format(k) for k in data.keys())
         sql = "insert into "+table +" (%s) values(%s)"
         res_sql = sql % (cols, val_cols)
-        print(res_sql)
         if doCommit:
             self.LogInfo("Insert SvcTransSys")
             self.__cur.execute(res_sql, data)
             self.__con.commit()
         else:
-            print(data)
+            self.LogWarn(res_sql)
+            self.LogWarn(data)
         return True
 
     def finalize(self):

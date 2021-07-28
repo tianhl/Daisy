@@ -35,7 +35,6 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                 return False
             filename = os.path.abspath(filename)
             filesize = os.path.getsize(filename)
-            #filetime = datetime.fromtimestamp(os.path.getmtime(filename)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             filetime = (datetime.fromtimestamp(os.path.getmtime(filename))+timedelta(hours=-8)).strftime("%Y-%m-%dT%H:%M:%S.%fZ")
             fileuid  = os.stat(filename).st_uid
             filegid  = os.stat(filename).st_gid
@@ -152,17 +151,17 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                     token = (r.json()["id"])
                     return (token)
                 except Exception:
-                    self.LogError('Cannot get user ID from SciCat!')
-                    self.LogError(r.text)
+                    self.LogWarn('Cannot get user ID from SciCat!')
+                    self.LogWarn(r.text)
             else:
-                self.LogError('Cannot get Response from SciCat Service')
-                self.LogError(r)
-                self.LogError(url)
-                self.LogError(self.user_info)
+                self.LogWarn('Cannot get Response from SciCat Service')
+                self.LogWarn(r)
+                self.LogWarn(url)
+                self.LogWarn(self.user_info)
         except Exception:
-            self.LogError('SciCat Service is not available!')
-            self.LogError(url)
-            self.LogError(self.user_info)
+            self.LogWarn('SciCat Service is not available!')
+            self.LogWarn(url)
+            self.LogWarn(self.user_info)
               
 
     def getToken(self):
@@ -177,26 +176,26 @@ class SvcSciCat(Daisy.Base.DaisySvc):
     def setDataset(self, rawPID = None, doCommit = False):
 
         if rawPID == None:
-            self.LogError('Please specify input pid')
+            self.LogWarn('Please specify input pid')
             return None
 
         rawDatasetinfo=self.getDatasetInfo(pid=rawPID)
         if rawDatasetinfo == None:
-            self.LogError('Can not get Raw Dataset Information with pid '+ rawPID)
-            return False
+            self.LogWarn('Can not get Raw Dataset Information with pid '+ rawPID)
+            return None
 
         dataset_json = self.__generateDataset.getDerivedDatasetJSON(raw_info=rawDatasetinfo)
         if dataset_json == None:
-            self.LogError('Can not generate Dataset JSON')
+            self.LogWarn('Can not generate Dataset JSON')
             return None
         dataset_url = self.access_point+'DerivedDatasets?access_token='+self.__token
 
         datablock_json = self.__generateDataset.getOrigDatablocksJSON()
         datablock_url = self.access_point+'OrigDatablocks?access_token='+self.__token
         if datablock_json['size'] == 0 or len(datablock_json['dataFileList']) == 0: 
-            self.LogError('No new file added to the dataset')
-            self.LogError(str(datablock_json))
-            return False
+            self.LogWarn('No new file added to the dataset')
+            self.LogWarn(str(datablock_json))
+            return None
 
         pid = self.__generateDataset.getPID()
         ret = {
@@ -212,28 +211,28 @@ class SvcSciCat(Daisy.Base.DaisySvc):
             try:
                 r = requests.post(url=dataset_url,json=dataset_json,headers=self.headers)
                 if not r.ok:
-                    self.LogError('Cannot post Dataset to SciCat')
-                    self.LogError(r.text)
-                    self.LogError(dataset_url)
-                    self.LogError(dataset_json)
-                    return False
+                    self.LogWarn('Cannot post Dataset to SciCat')
+                    self.LogWarn(r.text)
+                    self.LogWarn(dataset_url)
+                    self.LogWarn(dataset_json)
+                    return None
             except Exception:
-                self.LogError('SciCat Service is not available!')
-                self.LogError(dataset_url)
-                return False
+                self.LogWarn('SciCat Service is not available!')
+                self.LogWarn(dataset_url)
+                return None
   
             try:
                 r = requests.post(url=datablock_url,json=datablock_json,headers=self.headers)
                 if not r.ok:
-                    self.LogError('Cannot post Datablock to SciCat')
-                    self.LogError(r.text)
-                    self.LogError(datablock_url)
-                    self.LogError(datablock_json)
-                    return False
+                    self.LogWarn('Cannot post Datablock to SciCat')
+                    self.LogWarn(r.text)
+                    self.LogWarn(datablock_url)
+                    self.LogWarn(datablock_json)
+                    return None
             except Exception:
-                self.LogError('SciCat Service is not available!')
-                self.LogError(datablock_url)
-                return False
+                self.LogWarn('SciCat Service is not available!')
+                self.LogWarn(datablock_url)
+                return None
   
             self.LogInfo('Commit Derived Dataset ' + pid + ' to SciCat')
             self.__generateDataset.reset()
@@ -256,7 +255,7 @@ class SvcSciCat(Daisy.Base.DaisySvc):
     def getDatasetInfo(self, pid = None):
 
         if pid == None:
-            self.LogError('Please specify pid')
+            self.LogWarn('Please specify pid')
             return None
 
         pid=self.__polishPID(pid)  
@@ -269,25 +268,25 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                 try:
                     return (r.json())
                 except Exception:
-                    self.LogError('Cannot get Dataset from SciCat with PID '+ PId)
-                    self.LogError(r.text)
+                    self.LogWarn('Cannot get Dataset from SciCat with PID '+ PId)
+                    self.LogWarn(r.text)
                     return None
             else:
-                self.LogError('Cannot get Response from SciCat Service')
-                self.LogError(r)
-                self.LogError(url)
-                self.LogError(self.user_info)
+                self.LogWarn('Cannot get Response from SciCat Service')
+                self.LogWarn(r)
+                self.LogWarn(url)
+                self.LogWarn(self.user_info)
                 return None
         except Exception:
-            self.LogError('SciCat Service is not available!')
-            self.LogError(url)
-            self.LogError(self.user_info)
+            self.LogWarn('SciCat Service is not available!')
+            self.LogWarn(url)
+            self.LogWarn(self.user_info)
             return None
   
     def getPID(self, beamtimeId = None, scanId = None):
 
         if beamtimeId == None or scanId == None:
-            self.LogError('Please specify beamtimeId and scanId')
+            self.LogWarn('Please specify beamtimeId and scanId')
             return None
 
         url = self.access_point+'Datasets/findOne?filter={"where":{"scanId":"'+scanId+'","beamtimeId":"'+beamtimeId+'"}}&access_token='+self.__token
@@ -299,24 +298,24 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                     pid = (r.json()["pid"])
                     return pid
                 except Exception:
-                    self.LogError('Cannot get PID from SciCat with BeamtimeID '+ beamtimeId + ' ScanID ' + scanId)
-                    self.LogError(r.text)
+                    self.LogWarn('Cannot get PID from SciCat with BeamtimeID '+ beamtimeId + ' ScanID ' + scanId)
+                    self.LogWarn(r.text)
                     return None
             else:
-                self.LogError('Cannot get Response from SciCat Service')
-                self.LogError(r)
-                self.LogError(url)
-                self.LogError(self.user_info)
+                self.LogWarn('Cannot get Response from SciCat Service')
+                self.LogWarn(r)
+                self.LogWarn(url)
+                self.LogWarn(self.user_info)
                 return None
         except Exception:
-            self.LogError('SciCat Service is not available!')
-            self.LogError(url)
-            self.LogError(self.user_info)
+            self.LogWarn('SciCat Service is not available!')
+            self.LogWarn(url)
+            self.LogWarn(self.user_info)
             return None
 
     def getDataFileList(self, pid = None):
         if pid == None:
-            self.LogError('Please specify pid')
+            self.LogWarn('Please specify pid')
             return None
         pid=self.__polishPID(pid)  
         url = self.access_point+'OrigDatablocks/findOne?filter={"where":{"datasetId":"'+pid+'"}}&access_token='+self.__token
@@ -330,19 +329,19 @@ class SvcSciCat(Daisy.Base.DaisySvc):
                     files = tuple(eachfile['path'] for eachfile in datafile_list)
                     return files
                 except Exception:
-                    self.LogError('Cannot get filelist from SciCat with PID '+ pid)
-                    self.LogError(r.text)
+                    self.LogWarn('Cannot get filelist from SciCat with PID '+ pid)
+                    self.LogWarn(r.text)
                     return None
             else:
-                self.LogError('Cannot get Response from SciCat Service')
-                self.LogError(r)
-                self.LogError(url)
-                self.LogError(self.user_info)
+                self.LogWarn('Cannot get Response from SciCat Service')
+                self.LogWarn(r)
+                self.LogWarn(url)
+                self.LogWarn(self.user_info)
                 return None
         except Exception:
-            self.LogError('SciCat Service is not available!')
-            self.LogError(url)
-            self.LogError(self.user_info)
+            self.LogWarn('SciCat Service is not available!')
+            self.LogWarn(url)
+            self.LogWarn(self.user_info)
             return None
 
     def execute(self):
