@@ -7,3 +7,4 @@ from Daisy.PyAlgorithms.AlgCommandline      import AlgCommandline
 from Daisy.PyAlgorithms.AlgMatrixTranspose  import AlgMatrixTranspose
 from Daisy.PyAlgorithms.AlgTomopyFindCenter import AlgTomopyFindCenter
 from Daisy.PyAlgorithms.AlgHelloDaisy       import AlgHelloDaisy
+from Daisy.PyAlgorithms.AlgUFORecon         import AlgUFORecon
